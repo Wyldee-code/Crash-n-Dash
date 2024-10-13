@@ -1,4 +1,4 @@
-# `Crash n'Dash
+# Crash n'Dash
 
 ## Database Schema Design
 
