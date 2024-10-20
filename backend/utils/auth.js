@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { jwtConfig } = require('../config');
 const { User } = require('../db/models');
+
 const { secret, expiresIn } = jwtConfig;
 
 // Sends a JWT Cookie
@@ -31,47 +32,38 @@ const restoreUser = (req, res, next) => {
     req.user = null;
 
     return jwt.verify(token, secret, null, async (err, jwtPayload) => {
-        if (err) {
-            console.log("Wrong cookie");
-            return next();
-        }
-
-        try {
-            const { id } = jwtPayload.data;
-            req.user = await User.scope('currentUser').findByPk(id);
-        } catch (e) {
-            res.clearCookie('token');
-            return next();
-        }
-
-        if (!req.user) res.clearCookie('token');
-
+      if (err) {
         return next();
+      }
+
+      try {
+        const { id } = jwtPayload.data;
+        req.user = await User.findByPk(id, {
+          attributes: {
+            include: ['email', 'createdAt', 'updatedAt']
+          }
+        });
+      } catch (e) {
+        res.clearCookie('token');
+        return next();
+      }
+
+      if (!req.user) res.clearCookie('token');
+
+      return next();
     });
-};
+  };
 
 // If there is no current user, return an error
-const requireAuthentication = function (req, res, next) {
+const requireAuth = function (req, _res, next) {
     if (req.user) return next();
-    res.status(401).json({
-        "message": "Authentication required",
-        "statusCode": 401
-    })
-}
 
-// If there is no current user, return an error
-function respondWith403(res) {
-    res.status(403).json({
-        "message": "Forbidden",
-        "statusCode": 403
-    });
-}
+    const err = new Error('Authentication required');
+    err.title = 'Authentication required';
+    err.errors = { message: 'Authentication required' };
+    err.status = 401;
+    return next(err);
+  }
 
-function respondWithSuccessfulDelete(res) {
-    res.status(200).json({
-        "message": "Successfully deleted",
-        "statusCode": 200
-    });
-}
 
 module.exports = { setTokenCookie, restoreUser, requireAuthentication, respondWith403, respondWithSuccessfulDelete };
