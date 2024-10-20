@@ -5,8 +5,12 @@ const { Model, Validator } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
-      // define association here if needed, e.g.:
-      // User.hasMany(models.Whatever);
+      // define association here if needed
+    }
+
+    toSafeObject() {
+      const { id, username, email, firstName, lastName } = this;
+      return { id, username, email, firstName, lastName };
     }
   }
 
@@ -41,17 +45,30 @@ module.exports = (sequelize, DataTypes) => {
           len: [60, 60],
         },
       },
+      firstName: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+          len: [2, 50],
+        },
+      },
+      lastName: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+          len: [2, 50],
+        },
+      },
     },
     {
       sequelize,
       modelName: 'User',
       defaultScope: {
         attributes: {
-          exclude: ['hashedPassword', 'email', 'createdAt', 'updatedAt'], // Protect sensitive data
+          exclude: ['hashedPassword', 'email', 'createdAt', 'updatedAt'],
         },
       },
     }
   );
-
   return User;
 };

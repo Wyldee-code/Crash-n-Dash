@@ -28,6 +28,14 @@ module.exports = {
         type: Sequelize.STRING.BINARY,
         allowNull: false
       },
+      firstName: {
+        type: Sequelize.STRING(50),
+        allowNull: false,
+      },
+      lastName: {
+        type: Sequelize.STRING(50),
+        allowNull: false,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
@@ -42,7 +50,7 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    options.tableName = "Users";
+    options.tableName = 'Users';
     return queryInterface.dropTable(options);
   }
 };
