@@ -1,0 +1,33 @@
+{
+  "name": "crash-n-dash",
+  "version": "1.0.0",
+  "description": "## Database Schema Design",
+  "main": "index.js",
+  "dependencies": {
+    "aws-ssl-profiles": "^1.1.2",
+    "denque": "^2.1.0",
+    "generate-function": "^2.3.1",
+    "iconv-lite": "^0.6.3",
+    "is-property": "^1.0.2",
+    "long": "^5.2.3",
+    "lru-cache": "^7.18.3",
+    "lru.min": "^1.1.1",
+    "mysql2": "^3.11.3",
+    "named-placeholders": "^1.1.3",
+    "safer-buffer": "^2.1.2",
+    "seq-queue": "^0.0.5",
+    "sqlstring": "^2.3.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "install": "npm --prefix backend install backend",
+    "dev:backend": "npm install --prefix backend start",
+    "sequelize": "npm run --prefix backend sequelize",
+    "sequelize-cli": "npm run --prefix backend sequelize-cli",
+    "start": "npm start --prefix backend",
+    "build": "npm run --prefix backend build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
