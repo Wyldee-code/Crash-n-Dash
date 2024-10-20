@@ -5,7 +5,8 @@ const { Model, Validator } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
-      // define association here
+      // define association here if needed, e.g.:
+      // User.hasMany(models.Whatever);
     }
   }
 
@@ -46,10 +47,11 @@ module.exports = (sequelize, DataTypes) => {
       modelName: 'User',
       defaultScope: {
         attributes: {
-          exclude: ['hashedPassword', 'email', 'createdAt', 'updatedAt'],
+          exclude: ['hashedPassword', 'email', 'createdAt', 'updatedAt'], // Protect sensitive data
         },
       },
     }
   );
+
   return User;
 };
