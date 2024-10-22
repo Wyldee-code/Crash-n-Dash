@@ -5,7 +5,7 @@ const { Model, Validator } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
-      // define association here if any
+      // define associations here if you have any
     }
   }
 
@@ -53,11 +53,19 @@ module.exports = (sequelize, DataTypes) => {
       sequelize,
       modelName: 'User',
       defaultScope: {
-        attributes: { exclude: ['hashedPassword', 'email', 'createdAt', 'updatedAt'] }
+        attributes: {
+          exclude: ['hashedPassword', 'email', 'createdAt', 'updatedAt']
+        }
       },
       scopes: {
         currentUser: {
-          attributes: { include: ['email', 'createdAt', 'updatedAt'] }
+          attributes: {
+            include: ['email', 'createdAt', 'updatedAt']
+          }
+        },
+        // This scope is used when you want to fetch user data without sensitive info
+        safeUser: {
+          attributes: ['id', 'username', 'firstName', 'lastName']
         }
       }
     }

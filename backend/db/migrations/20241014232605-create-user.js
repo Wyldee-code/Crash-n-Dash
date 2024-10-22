@@ -1,4 +1,4 @@
- 'use strict';
+'use strict';
 
 let options = {};
 if (process.env.NODE_ENV === 'production') {
@@ -25,7 +25,7 @@ module.exports = {
         unique: true
       },
       hashedPassword: {
-        type: Sequelize.STRING.BINARY,
+        type: Sequelize.STRING(60),  // Updated to STRING with a length of 60
         allowNull: false
       },
       firstName: {
