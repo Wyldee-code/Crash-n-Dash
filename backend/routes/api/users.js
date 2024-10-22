@@ -1,114 +1,61 @@
-'use strict';
-
-const { Model, Validator } = require('sequelize');
+// backend/routes/api/users.js
+const express = require('express');
 const bcrypt = require('bcryptjs');
+const { setTokenCookie } = require('../../utils/auth');
+const { check } = require('express-validator');
+const { handleValidationErrors } = require('../../utils/validation');
+const { User } = require('../../db/models');
 
-module.exports = (sequelize, DataTypes) => {
-  class User extends Model {
-    static associate(models) {
-      // Define associations here, if necessary
-      // Example: User.hasMany(models.Post, { foreignKey: 'userId' });
-    }
+const router = express.Router();
 
-    // Method to return a safe user object excluding sensitive info
-    toSafeObject() {
-      const { id, username, email, firstName, lastName } = this;
-      return { id, username, email, firstName, lastName };
-    }
+// Validation for signup input
+const validateSignup = [
+  check('email')
+    .exists({ checkFalsy: true })
+    .isEmail()
+    .withMessage('Please provide a valid email.'),
+  check('username')
+    .exists({ checkFalsy: true })
+    .isLength({ min: 4 })
+    .withMessage('Please provide a username with at least 4 characters.'),
+  check('username')
+    .not()
+    .isEmail()
+    .withMessage('Username cannot be an email.'),
+  check('password')
+    .exists({ checkFalsy: true })
+    .isLength({ min: 6 })
+    .withMessage('Password must be 6 characters or more.'),
+  handleValidationErrors
+];
 
-    // Method to validate password
-    validatePassword(password) {
-      return bcrypt.compareSync(password, this.hashedPassword.toString());
-    }
+// Sign up
+router.post(
+  '/',
+  validateSignup,
+  async (req, res) => {
+    const { email, password, username, firstName, lastName } = req.body;
+    const hashedPassword = bcrypt.hashSync(password);
+    const user = await User.create({
+      email,
+      username,
+      firstName,  // Add firstName
+      lastName,   // Add lastName
+      hashedPassword
+    });
 
-    // Method to signup (create a new user)
-    static async signup({ email, username, password, firstName, lastName }) {
-      const hashedPassword = bcrypt.hashSync(password); // Hash the password
-      const user = await User.create({
-        email,
-        username,
-        hashedPassword,
-        firstName,
-        lastName,
-      });
-      return user;
-    }
+    const safeUser = {
+      id: user.id,
+      firstName: user.firstName,   // Add firstName
+      lastName: user.lastName,     // Add lastName
+      email: user.email,
+      username: user.username,
+    };
 
-    // Method to login
-    static async login({ credential, password }) {
-      const user = await User.unscoped().findOne({
-        where: {
-          [Validator.or]: {
-            username: credential,
-            email: credential,
-          },
-        },
-      });
+    await setTokenCookie(res, safeUser);
 
-      if (user && user.validatePassword(password)) {
-        return user;
-      }
-      return null;
-    }
+    return res.json({ user: safeUser });
   }
+);
 
-  // Initialize the User model
-  User.init(
-    {
-      username: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
-        validate: {
-          len: [4, 30],
-          isNotEmail(value) {
-            if (Validator.isEmail(value)) {
-              throw new Error('Username cannot be an email.');
-            }
-          },
-        },
-      },
-      email: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
-        validate: {
-          len: [3, 256],
-          isEmail: true,
-        },
-      },
-      hashedPassword: {
-        type: DataTypes.STRING.BINARY,
-        allowNull: false,
-        validate: {
-          len: [60, 60], // bcrypt hash length
-        },
-      },
-      firstName: {
-        type: DataTypes.STRING(50),
-        allowNull: false,
-        validate: {
-          len: [2, 50],
-        },
-      },
-      lastName: {
-        type: DataTypes.STRING(50),
-        allowNull: false,
-        validate: {
-          len: [2, 50],
-        },
-      },
-    },
-    {
-      sequelize,
-      modelName: 'User',
-      defaultScope: {
-        attributes: {
-          exclude: ['hashedPassword', 'createdAt', 'updatedAt'],
-        },
-      },
-    }
-  );
-
-  return User;
-};
+module.exports = router;

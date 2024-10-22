@@ -5,7 +5,7 @@ const { Model, Validator } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
-      // define association here
+      // define association here if any
     }
   }
 
@@ -21,8 +21,8 @@ module.exports = (sequelize, DataTypes) => {
             if (Validator.isEmail(value)) {
               throw new Error('Cannot be an email.');
             }
-          },
-        },
+          }
+        }
       },
       email: {
         type: DataTypes.STRING,
@@ -30,26 +30,38 @@ module.exports = (sequelize, DataTypes) => {
         unique: true,
         validate: {
           len: [3, 256],
-          isEmail: true,
-        },
+          isEmail: true
+        }
       },
       hashedPassword: {
         type: DataTypes.STRING.BINARY,
         allowNull: false,
         validate: {
-          len: [60, 60],
-        },
+          len: [60, 60]
+        }
       },
+      firstName: {  // Add firstName field
+        type: DataTypes.STRING(50),
+        allowNull: false
+      },
+      lastName: {  // Add lastName field
+        type: DataTypes.STRING(50),
+        allowNull: false
+      }
     },
     {
       sequelize,
       modelName: 'User',
       defaultScope: {
-        attributes: {
-          exclude: ['hashedPassword', 'email', 'createdAt', 'updatedAt'],
-        },
+        attributes: { exclude: ['hashedPassword'] }
       },
+      scopes: {
+        currentUser: {
+          attributes: { include: ['firstName', 'lastName', 'email', 'createdAt', 'updatedAt'] }
+        },
+      }
     }
   );
+
   return User;
 };
