@@ -25,7 +25,7 @@ module.exports = {
         unique: true
       },
       hashedPassword: {
-        type: Sequelize.STRING(60),  // Updated to STRING with a length of 60
+        type: Sequelize.STRING.BINARY, 
         allowNull: false
       },
       firstName: {
