@@ -1,42 +1,40 @@
 'use strict';
 
-const spots = [
-  {
-    ownerId: 1, // assuming user with id 1 exists
-    address: '123 Main St',
-    city: 'San Francisco',
-    state: 'California',
-    country: 'United States',
-    lat: 37.7749,
-    lng: -122.4194,
-    name: 'Beautiful Spot',
-    description: 'A cozy spot in San Francisco',
-    price: 100,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    ownerId: 2, // assuming user with id 2 exists
-    address: '456 Oak Ave',
-    city: 'Los Angeles',
-    state: 'California',
-    country: 'United States',
-    lat: 34.0522,
-    lng: -118.2437,
-    name: 'Luxury Spot',
-    description: 'A luxurious spot in Los Angeles',
-    price: 250,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  }
-];
-
 module.exports = {
-  async up(queryInterface, Sequelize) {
-    return queryInterface.bulkInsert('Spots', spots, {});
+  up: async (queryInterface, Sequelize) => {
+    await queryInterface.bulkInsert('Spots', [
+      {
+        ownerId: 1,  // Assuming we have a User with id 1
+        address: '123 Main Street',
+        city: 'Los Angeles',
+        state: 'California',
+        country: 'USA',
+        lat: 34.0522,
+        lng: -118.2437,
+        name: 'Cozy Apartment',
+        description: 'A cozy apartment in the heart of the city.',
+        price: 150,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        ownerId: 2,
+        address: '456 Ocean Drive',
+        city: 'Miami',
+        state: 'Florida',
+        country: 'USA',
+        lat: 25.7617,
+        lng: -80.1918,
+        name: 'Beach House',
+        description: 'A beautiful beach house with ocean view.',
+        price: 300,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    ], {});
   },
 
-  async down(queryInterface, Sequelize) {
-    return queryInterface.bulkDelete('Spots', null, {});
-  },
+  down: async (queryInterface, Sequelize) => {
+    await queryInterface.bulkDelete('Spots', null, {});
+  }
 };
