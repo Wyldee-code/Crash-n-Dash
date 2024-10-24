@@ -1,48 +1,31 @@
 'use strict';
+const { Model } = require('sequelize');
 
-let options = {};
-if (process.env.NODE_ENV === 'production') {
-  options.schema = process.env.SCHEMA;  // define your schema in options object
-}
-
-module.exports = {
-  async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('SpotImages', {
-      id: {
-        allowNull: false,
-        autoIncrement: true,
-        primaryKey: true,
-        type: Sequelize.INTEGER
-      },
-      spotId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: { model: 'Spots' }, // Ensure Spots table is referenced
-        onDelete: 'CASCADE'
-      },
-      url: {
-        type: Sequelize.STRING,
-        allowNull: false
-      },
-      preview: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false
-      },
-      createdAt: {
-        allowNull: false,
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
-      },
-      updatedAt: {
-        allowNull: false,
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
-      }
-    }, options);
-  },
-
-  async down(queryInterface, Sequelize) {
-    options.tableName = 'SpotImages';
-    return queryInterface.dropTable(options);
+module.exports = (sequelize, DataTypes) => {
+  class SpotImage extends Model {
+    static associate(models) {
+      // Association to Spot model (SpotImage belongs to Spot)
+      SpotImage.belongsTo(models.Spot, { foreignKey: 'spotId', onDelete: 'CASCADE' });
+    }
   }
+
+  SpotImage.init({
+    spotId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    url: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    preview: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    }
+  }, {
+    sequelize,
+    modelName: 'SpotImage',
+  });
+
+  return SpotImage;
 };

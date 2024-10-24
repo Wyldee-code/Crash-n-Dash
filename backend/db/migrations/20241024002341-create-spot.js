@@ -17,11 +17,11 @@ module.exports = {
       ownerId: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        references: { model: 'Users' }, // Ensure Users table is referenced
+        references: { model: 'Users' },  // Ensure the Users table is referenced
         onDelete: 'CASCADE'
       },
       name: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(50),
         allowNull: false
       },
       description: {
@@ -46,7 +46,7 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    options.tableName = 'Spots';
+    options.tableName = 'Spots'; // Use the correct table name in the options object
     return queryInterface.dropTable(options);
   }
 };

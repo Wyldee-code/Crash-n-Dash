@@ -4,8 +4,13 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Spot extends Model {
     static associate(models) {
-      // Association to User model
+      // Association to User model (Spot belongs to User)
       Spot.belongsTo(models.User, { foreignKey: 'ownerId' });
+
+      // Association to SpotImages model (Spot has many SpotImages)
+      Spot.hasMany(models.SpotImage, { foreignKey: 'spotId', onDelete: 'CASCADE' });
+
+      // Other associations such as reviews, bookings can be added here later if needed
     }
   }
 
