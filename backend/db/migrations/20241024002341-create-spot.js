@@ -1,10 +1,5 @@
 'use strict';
-
-let options = {};
-if (process.env.NODE_ENV === 'production') {
-  options.schema = process.env.SCHEMA;  // define your schema in options object
-}
-
+/** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('Spots', {
@@ -15,38 +10,48 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       ownerId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: { model: 'Users' },  // Ensure the Users table is referenced
-        onDelete: 'CASCADE'
+        type: Sequelize.INTEGER
+      },
+      address: {
+        type: Sequelize.TEXT
+      },
+      city: {
+        type: Sequelize.TEXT
+      },
+      state: {
+        type: Sequelize.TEXT
+      },
+      country: {
+        type: Sequelize.TEXT
+      },
+      lat: {
+        type: Sequelize.DECIMAL
+      },
+      lng: {
+        type: Sequelize.DECIMAL
       },
       name: {
-        type: Sequelize.STRING(50),
-        allowNull: false
+        type: Sequelize.TEXT
       },
       description: {
-        type: Sequelize.TEXT,
-        allowNull: false
+        type: Sequelize.TEXT
       },
       price: {
-        type: Sequelize.DECIMAL,
-        allowNull: false
+        type: Sequelize.DECIMAL
       },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP")
       },
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP")
       }
-    }, options);
+    });
   },
-
   async down(queryInterface, Sequelize) {
-    options.tableName = 'Spots'; // Use the correct table name in the options object
-    return queryInterface.dropTable(options);
+    await queryInterface.dropTable('Spots');
   }
 };

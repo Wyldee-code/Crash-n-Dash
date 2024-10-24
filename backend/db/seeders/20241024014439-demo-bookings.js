@@ -1,48 +1,43 @@
 'use strict';
 
-const { Booking } = require('../models');
-
-let options = {};
-if (process.env.NODE_ENV === 'production') {
-  options.schema = process.env.SCHEMA;  // Define schema in options object for Postgres
-}
-
+/** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up(queryInterface, Sequelize) {
-    return queryInterface.bulkInsert(
-      'Bookings',
-      [
-        {
-          startDate: '2024-01-15',
-          endDate: '2024-01-20',
-          spotId: 1, // Assuming spotId 1 exists in your Spots table
-          userId: 1, // Assuming userId 1 exists in your Users table
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          startDate: '2024-02-10',
-          endDate: '2024-02-15',
-          spotId: 2,
-          userId: 2,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          startDate: '2024-03-05',
-          endDate: '2024-03-10',
-          spotId: 3,
-          userId: 1,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ],
-      options
-    );
+  up: async (queryInterface, Sequelize) => {
+    await queryInterface.bulkInsert('Bookings', [
+      // Forbidden: Not owned
+      {
+        spotId: 1,
+        userId: 2,
+        startDate: "2024-10-25", // Updated to current/future dates
+        endDate: "2024-10-28"
+      },
+      // Forbidden: Can't change past bookings
+      {
+        spotId: 1,
+        userId: 1,
+        startDate: "2023-12-19", // Updated
+        endDate: "2023-12-20",
+      },
+      // Use these to cause overlaps
+      {
+        spotId: 1,
+        userId: 1,
+        startDate: "2025-01-01", // Future booking
+        endDate: "2025-01-10",
+      },
+      {
+        spotId: 1,
+        userId: 1,
+        startDate: "2025-01-20",
+        endDate: "2025-01-26",
+      }
+    ], {});
   },
 
-  async down(queryInterface, Sequelize) {
-    options.tableName = 'Bookings';
-    return queryInterface.bulkDelete(options, null, {});
+  down: async (queryInterface, Sequelize) => {
+    const Op = Sequelize.Op;
+    return queryInterface.bulkDelete('Bookings', {
+      spotId: { [Op.in]: [1, 2] }
+    }, {});
   }
 };

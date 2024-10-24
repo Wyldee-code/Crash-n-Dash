@@ -1,10 +1,5 @@
 'use strict';
-
-let options = {};
-if (process.env.NODE_ENV === 'production') {
-  options.schema = process.env.SCHEMA;  // Define schema in options object for production
-}
-
+/** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('SpotImages', {
@@ -14,38 +9,40 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
+      spotId: {
+        type: Sequelize.INTEGER
+      },
       url: {
-        type: Sequelize.STRING,
-        allowNull: false
+        type: Sequelize.TEXT
       },
       preview: {
         type: Sequelize.BOOLEAN,
         defaultValue: false
       },
-      spotId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'Spots',  // Ensure Spots table is referenced
-          key: 'id'
-        },
-        onDelete: 'CASCADE'  // Ensure SpotImages are deleted if the associated Spot is deleted
-      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP")
       },
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP")
       }
-    }, options);
-  },
+    });
 
+    await queryInterface.addIndex(
+      'SpotImages',
+      ['spotId', 'preview'],
+      {
+        name: 'at-most-one-preview-per-spot',
+        where: { preview: true },
+        unique: true
+      });
+  },
   async down(queryInterface, Sequelize) {
-    options.tableName = 'SpotImages';  // Use the correct table name in the options object
-    return queryInterface.dropTable(options);
+    await queryInterface.dropTable('SpotImages');
+
+    await queryInterface.removeIndex('SpotImages', 'at-most-one-preview-per-spot')
   }
 };
