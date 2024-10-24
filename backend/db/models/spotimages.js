@@ -7,30 +7,26 @@ if (process.env.NODE_ENV === 'production') {
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Spots', {
+    await queryInterface.createTable('SpotImages', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      ownerId: {
+      spotId: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        references: { model: 'Users' }, // Ensure Users table is referenced
+        references: { model: 'Spots' }, // Ensure Spots table is referenced
         onDelete: 'CASCADE'
       },
-      name: {
+      url: {
         type: Sequelize.STRING,
         allowNull: false
       },
-      description: {
-        type: Sequelize.TEXT,
-        allowNull: false
-      },
-      price: {
-        type: Sequelize.DECIMAL,
-        allowNull: false
+      preview: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
       },
       createdAt: {
         allowNull: false,
@@ -46,7 +42,7 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    options.tableName = 'Spots';
+    options.tableName = 'SpotImages';
     return queryInterface.dropTable(options);
   }
 };
