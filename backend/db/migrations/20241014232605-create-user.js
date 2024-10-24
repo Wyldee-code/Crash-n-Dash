@@ -14,20 +14,6 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      username: {
-        type: Sequelize.STRING(30),
-        allowNull: false,
-        unique: true
-      },
-      email: {
-        type: Sequelize.STRING(256),
-        allowNull: false,
-        unique: true
-      },
-      hashedPassword: {
-        type: Sequelize.STRING.BINARY, 
-        allowNull: false
-      },
       firstName: {
         type: Sequelize.STRING(50),
         allowNull: false
@@ -35,6 +21,34 @@ module.exports = {
       lastName: {
         type: Sequelize.STRING(50),
         allowNull: false
+      },
+      username: {
+        type: Sequelize.STRING(30),
+        allowNull: false,
+        unique: true, 
+        validate: {
+          len: [4, 30],
+          isNotEmail(value) {
+            if (Validator.isEmail(value)) {
+              throw new Error('Cannot be an email.');
+            }
+          }
+        }
+      },
+      email: {
+        type: Sequelize.STRING(256),
+        allowNull: false,
+        unique: true,
+        validate: {
+          isEmail: true
+        }
+      },
+      hashedPassword: {
+        type: Sequelize.STRING.BINARY,
+        allowNull: false,
+        validate: {
+          len: [60, 60]
+        }
       },
       createdAt: {
         allowNull: false,
@@ -50,7 +64,7 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    options.tableName = "Users";
+    options.tableName = 'Users';
     return queryInterface.dropTable(options);
   }
 };
