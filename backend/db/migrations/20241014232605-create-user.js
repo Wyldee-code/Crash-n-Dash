@@ -2,7 +2,7 @@
 
 let options = {};
 if (process.env.NODE_ENV === 'production') {
-  options.schema = process.env.SCHEMA;  // define your schema in options object
+  options.schema = process.env.SCHEMA;  // Define your schema in options object
 }
 
 module.exports = {
@@ -25,30 +25,16 @@ module.exports = {
       username: {
         type: Sequelize.STRING(30),
         allowNull: false,
-        unique: true, 
-        validate: {
-          len: [4, 30],
-          isNotEmail(value) {
-            if (Validator.isEmail(value)) {
-              throw new Error('Cannot be an email.');
-            }
-          }
-        }
+        unique: true,
       },
       email: {
         type: Sequelize.STRING(256),
         allowNull: false,
         unique: true,
-        validate: {
-          isEmail: true
-        }
       },
       hashedPassword: {
         type: Sequelize.STRING.BINARY,
         allowNull: false,
-        validate: {
-          len: [60, 60]
-        }
       },
       createdAt: {
         allowNull: false,

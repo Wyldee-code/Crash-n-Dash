@@ -5,9 +5,10 @@ const bcrypt = require('bcryptjs');
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     toSafeObject() {
-      const { id, username, email, firstName, lastName } = this; // context will be the User instance
+      const { id, username, email, firstName, lastName } = this;
       return { id, username, email, firstName, lastName };
     }
+
     validatePassword(password) {
       return bcrypt.compareSync(password, this.hashedPassword.toString());
     }
@@ -15,6 +16,7 @@ module.exports = (sequelize, DataTypes) => {
     static getCurrentUserById(id) {
       return User.scope("currentUser").findByPk(id);
     }
+
     static async login({ credential, password }) {
       const { Op } = require('sequelize');
       const user = await User.scope('loginUser').findOne({
@@ -29,6 +31,7 @@ module.exports = (sequelize, DataTypes) => {
         return await User.scope('currentUser').findByPk(user.id);
       }
     }
+
     static async signup({ username, email, password, firstName, lastName }) {
       const hashedPassword = bcrypt.hashSync(password);
       const user = await User.create({
@@ -40,6 +43,7 @@ module.exports = (sequelize, DataTypes) => {
       });
       return await User.scope('currentUser').findByPk(user.id);
     }
+
     static associate(models) {
       User.hasMany(models.Spot, { foreignKey: "ownerId" });
       User.hasMany(models.Booking, { foreignKey: "userId" });
@@ -62,24 +66,17 @@ module.exports = (sequelize, DataTypes) => {
         }
       },
       firstName: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(50),
         allowNull: false,
-        validate: {
-          len: [1, 30],
-        }
       },
       lastName: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(50),
         allowNull: false,
-        validate: {
-          len: [1, 30],
-        }
       },
       email: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(256),
         allowNull: false,
         validate: {
-          len: [3, 256],
           isEmail: true
         }
       },
