@@ -1,11 +1,11 @@
 // backend/routes/api/session.js
 const express = require('express');
-const { Op } = require('sequelize');
-const bcrypt = require('bcryptjs');
-const { setTokenCookie, restoreUser } = require('../../utils/auth');
-const { check } = require('express-validator');
-const { handleValidationErrors } = require('../../utils/validation');
+
+const { setTokenCookie, restoreUser, requireAuthentication } = require('../../utils/auth');
 const { User } = require('../../db/models');
+
+const { check } = require('express-validator');
+const { validateLogin, analyzeErrors } = require('../api/validators.js');
 
 const router = express.Router();
 
@@ -87,4 +87,3 @@ router.get(
 );
 
 module.exports = router;
-
