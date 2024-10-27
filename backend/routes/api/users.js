@@ -1,60 +1,41 @@
+// backend/routes/api/users.js
 const express = require('express');
+const bcrypt = require('bcryptjs');
 const { setTokenCookie, requireAuth } = require('../../utils/auth');
 const { User } = require('../../db/models');
-const { validateSignup, analyzeErrors } = require('../api/validators.js');
+const { check } = require('express-validator');
+const { handleValidationErrors } = require('../../utils/validation');
 
 const router = express.Router();
 
-// Sign up a new user
-router.post('/', validateSignup, async (req, res) => {
-  analyzeErrors(req, res, async () => {
+// Validation middleware for signup
+const validateSignup = [
+  check('email').exists({ checkFalsy: true }).isEmail().withMessage('Please provide a valid email.'),
+  check('username').exists({ checkFalsy: true }).isLength({ min: 4 }).withMessage('Please provide a username with at least 4 characters.'),
+  check('username').not().isEmail().withMessage('Username cannot be an email.'),
+  check('password').exists({ checkFalsy: true }).isLength({ min: 6 }).withMessage('Password must be 6 characters or more.'),
+  handleValidationErrors
+];
+
+// Signup route
+router.post(
+  '/',
+  validateSignup,
+  async (req, res) => {
     const { email, password, username, firstName, lastName } = req.body;
+    const hashedPassword = bcrypt.hashSync(password);
+    const user = await User.create({ email, username, hashedPassword, firstName, lastName });
 
-    // Ensure that email and username are unique
-    const existingUser = await User.findOne({
-      where: {
-        email
-      }
-    });
+    const safeUser = {
+      id: user.id,
+      email: user.email,
+      username: user.username
+    };
 
-    if (existingUser) {
-      return res.status(403).json({
-        message: "User with that email already exists",
-        statusCode: 403,
-      });
-    }
+    await setTokenCookie(res, safeUser);
 
-    // Sign up the user using User model's signup method
-    const user = await User.signup({
-      email,
-      username,
-      password,
-      firstName,
-      lastName
-    });
-
-    // Set token cookie for the user
-    const token = setTokenCookie(res, user);
-
-    // Respond with the user's safe object and token
-    return res.json({
-      ...user.toSafeObject(),
-      token
-    });
-  });
-});
-
-// Get the current user
-router.get('/current', requireAuth, (req, res) => {
-  const { user } = req;
-
-  if (user) {
-    return res.json({
-      ...user.toSafeObject()
-    });
-  } else {
-    return res.json(null);
+    return res.json({ user: safeUser });
   }
-});
+);
 
 module.exports = router;
