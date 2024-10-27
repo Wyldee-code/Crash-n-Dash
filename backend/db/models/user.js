@@ -1,10 +1,10 @@
-// backend/db/models/user.js
+'use strict';
 const { Model, Validator } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
-      // define associations here
+      // define association here
     }
   }
 
@@ -28,34 +28,35 @@ module.exports = (sequelize, DataTypes) => {
             if (Validator.isEmail(value)) {
               throw new Error('Cannot be an email.');
             }
-          }
-        }
+          },
+        },
       },
       email: {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
         validate: {
+          isEmail: true,
           len: [3, 256],
-          isEmail: true
-        }
+        },
       },
       hashedPassword: {
         type: DataTypes.STRING.BINARY,
         allowNull: false,
         validate: {
-          len: [60, 60]
-        }
-      }
+          len: [60, 60],
+        },
+      },
     },
     {
       sequelize,
       modelName: 'User',
       defaultScope: {
-        attributes: { exclude: ['hashedPassword', 'email', 'createdAt', 'updatedAt'] }
-      }
+        attributes: {
+          exclude: ['hashedPassword', 'email', 'createdAt', 'updatedAt'],
+        },
+      },
     }
   );
-
   return User;
 };
