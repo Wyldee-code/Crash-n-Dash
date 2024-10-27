@@ -68,6 +68,19 @@ router.post(
           errors
         });
       }
+
+      // Check for other validation errors
+      if (err.name === 'SequelizeValidationError') {
+        const errors = {};
+        err.errors.forEach((error) => {
+          errors[error.path] = error.message;
+        });
+        return res.status(400).json({
+          message: 'Validation error',
+          errors
+        });
+      }
+
       // Pass other errors to the error-handling middleware
       next(err);
     }
