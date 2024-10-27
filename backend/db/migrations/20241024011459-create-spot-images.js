@@ -1,7 +1,7 @@
 'use strict';
-/** @type {import('sequelize-cli').Migration} */
+
 module.exports = {
-  async up(queryInterface, Sequelize) {
+  up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('SpotImages', {
       id: {
         allowNull: false,
@@ -10,10 +10,13 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       spotId: {
-        type: Sequelize.INTEGER
+        allowNull: false,
+        type: Sequelize.INTEGER,
+        references: { model: 'Spots' }
       },
       url: {
-        type: Sequelize.TEXT
+        allowNull: false,
+        type: Sequelize.STRING
       },
       preview: {
         type: Sequelize.BOOLEAN,
@@ -22,27 +25,17 @@ module.exports = {
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP")
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
       },
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP")
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
       }
     });
-
-    await queryInterface.addIndex(
-      'SpotImages',
-      ['spotId', 'preview'],
-      {
-        name: 'at-most-one-preview-per-spot',
-        where: { preview: true },
-        unique: true
-      });
   },
-  async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('SpotImages');
 
-    await queryInterface.removeIndex('SpotImages', 'at-most-one-preview-per-spot')
+  down: async (queryInterface) => {
+    await queryInterface.dropTable('SpotImages');
   }
 };

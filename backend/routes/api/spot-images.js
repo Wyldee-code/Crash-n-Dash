@@ -1,60 +1,47 @@
+// routes/api/spot-images.js
 const express = require('express');
+const { Spot, SpotImage } = require('../../db/models');
 const { requireAuth } = require('../../utils/auth');
-const { SpotImage, Spot } = require('../../db/models');
-
 const router = express.Router();
 
-// Add an image to a spot (require authentication)
-router.post('/:spotId/images', requireAuth, async (req, res) => {
-  const { url, preview } = req.body;
-  const spot = await Spot.findByPk(req.params.spotId);
-
-  if (!spot) {
-    return res.status(404).json({ message: "Spot couldn't be found" });
+// Add an image to a spot by spot ID
+router.post('/:spotId/images', requireAuth, async (req, res, next) => {
+  try {
+    const spot = await Spot.findByPk(req.params.spotId);
+    if (!spot) {
+      return res.status(404).json({ message: 'Spot not found' });
+    }
+    if (spot.ownerId !== req.user.id) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+    const { url, preview } = req.body;
+    const newImage = await SpotImage.create({
+      spotId: spot.id,
+      url,
+      preview
+    });
+    res.status(201).json(newImage);
+  } catch (err) {
+    next(err);
   }
-
-  if (spot.ownerId !== req.user.id) {
-    return res.status(403).json({ message: 'Forbidden' });
-  }
-
-  const newImage = await SpotImage.create({
-    url,
-    preview: preview || false,
-    spotId: req.params.spotId,
-  });
-
-  return res.status(201).json(newImage);
 });
 
-// Get all images for a specific spot
-router.get('/:spotId/images', async (req, res) => {
-  const spot = await Spot.findByPk(req.params.spotId, {
-    include: SpotImage,
-  });
-
-  if (!spot) {
-    return res.status(404).json({ message: "Spot couldn't be found" });
+// Delete an image by image ID
+router.delete('/images/:imageId', requireAuth, async (req, res, next) => {
+  try {
+    const image = await SpotImage.findByPk(req.params.imageId);
+    if (!image) {
+      return res.status(404).json({ message: 'Image not found' });
+    }
+    const spot = await Spot.findByPk(image.spotId);
+    if (spot.ownerId !== req.user.id) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+    await image.destroy();
+    res.status(204).end();
+  } catch (err) {
+    next(err);
   }
-
-  return res.json(spot.SpotImages);
-});
-
-// Delete an image (require authentication)
-router.delete('/images/:imageId', requireAuth, async (req, res) => {
-  const image = await SpotImage.findByPk(req.params.imageId, {
-    include: Spot,
-  });
-
-  if (!image) {
-    return res.status(404).json({ message: "Image couldn't be found" });
-  }
-
-  if (image.Spot.ownerId !== req.user.id) {
-    return res.status(403).json({ message: 'Forbidden' });
-  }
-
-  await image.destroy();
-  return res.json({ message: 'Successfully deleted' });
 });
 
 module.exports = router;

@@ -1,7 +1,7 @@
 'use strict';
-/** @type {import('sequelize-cli').Migration} */
+
 module.exports = {
-  async up(queryInterface, Sequelize) {
+  up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('Spots', {
       id: {
         allowNull: false,
@@ -10,48 +10,57 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       ownerId: {
-        type: Sequelize.INTEGER
+        allowNull: false,
+        type: Sequelize.INTEGER,
+        references: { model: 'Users' }
       },
       address: {
-        type: Sequelize.TEXT
+        allowNull: false,
+        type: Sequelize.STRING
       },
       city: {
-        type: Sequelize.TEXT
+        allowNull: false,
+        type: Sequelize.STRING
       },
       state: {
-        type: Sequelize.TEXT
+        allowNull: false,
+        type: Sequelize.STRING
       },
       country: {
-        type: Sequelize.TEXT
+        allowNull: false,
+        type: Sequelize.STRING
       },
       lat: {
-        type: Sequelize.DECIMAL
+        type: Sequelize.FLOAT
       },
       lng: {
-        type: Sequelize.DECIMAL
+        type: Sequelize.FLOAT
       },
       name: {
-        type: Sequelize.TEXT
+        allowNull: false,
+        type: Sequelize.STRING
       },
       description: {
         type: Sequelize.TEXT
       },
       price: {
+        allowNull: false,
         type: Sequelize.DECIMAL
       },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP")
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
       },
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP")
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
       }
     });
   },
-  async down(queryInterface, Sequelize) {
+
+  down: async (queryInterface) => {
     await queryInterface.dropTable('Spots');
   }
 };
