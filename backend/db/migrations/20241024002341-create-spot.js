@@ -7,60 +7,54 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       ownerId: {
-        allowNull: false,
         type: Sequelize.INTEGER,
-        references: { model: 'Users' }
+        allowNull: false,
+        references: { model: 'Users' },
       },
       address: {
+        type: Sequelize.STRING,
         allowNull: false,
-        type: Sequelize.STRING
       },
       city: {
+        type: Sequelize.STRING,
         allowNull: false,
-        type: Sequelize.STRING
       },
       state: {
+        type: Sequelize.STRING,
         allowNull: false,
-        type: Sequelize.STRING
       },
       country: {
+        type: Sequelize.STRING,
         allowNull: false,
-        type: Sequelize.STRING
-      },
-      lat: {
-        type: Sequelize.FLOAT
-      },
-      lng: {
-        type: Sequelize.FLOAT
       },
       name: {
+        type: Sequelize.STRING,
         allowNull: false,
-        type: Sequelize.STRING
       },
       description: {
-        type: Sequelize.TEXT
+        type: Sequelize.TEXT,
+        allowNull: false,
       },
       price: {
+        type: Sequelize.DECIMAL,
         allowNull: false,
-        type: Sequelize.DECIMAL
       },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
-      }
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+      },
     });
   },
-
-  down: async (queryInterface) => {
+  down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('Spots');
-  }
+  },
 };

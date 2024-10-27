@@ -1,29 +1,27 @@
 'use strict';
 const { Model } = require('sequelize');
-
 module.exports = (sequelize, DataTypes) => {
   class Spot extends Model {
     static associate(models) {
-      Spot.hasMany(models.SpotImage, { foreignKey: 'spotId', onDelete: 'CASCADE' });
       Spot.belongsTo(models.User, { foreignKey: 'ownerId', as: 'Owner' });
+      Spot.hasMany(models.SpotImage, { foreignKey: 'spotId', as: 'Images' });
     }
   }
-
-  Spot.init({
-    ownerId: { type: DataTypes.INTEGER, allowNull: false },
-    address: { type: DataTypes.STRING, allowNull: false },
-    city: { type: DataTypes.STRING, allowNull: false },
-    state: { type: DataTypes.STRING, allowNull: false },
-    country: { type: DataTypes.STRING, allowNull: false },
-    lat: { type: DataTypes.FLOAT },
-    lng: { type: DataTypes.FLOAT },
-    name: { type: DataTypes.STRING, allowNull: false },
-    description: { type: DataTypes.TEXT },
-    price: { type: DataTypes.DECIMAL, allowNull: false }
-  }, {
-    sequelize,
-    modelName: 'Spot'
-  });
-
+  Spot.init(
+    {
+      ownerId: DataTypes.INTEGER,
+      address: DataTypes.STRING,
+      city: DataTypes.STRING,
+      state: DataTypes.STRING,
+      country: DataTypes.STRING,
+      name: DataTypes.STRING,
+      description: DataTypes.TEXT,
+      price: DataTypes.DECIMAL,
+    },
+    {
+      sequelize,
+      modelName: 'Spot',
+    }
+  );
   return Spot;
 };
