@@ -20,11 +20,9 @@ app.use(express.json());
 
 // Security Middleware
 if (!isProduction) {
-  // enable cors only in development
   app.use(cors());
 }
 
-// helmet helps set a variety of headers to better secure your app
 app.use(
   helmet.crossOriginResourcePolicy({
     policy: "cross-origin"
@@ -42,8 +40,13 @@ app.use(
   })
 );
 
-app.use(routes);
+// CSRF token restoration route
+app.get("/api/csrf/restore", (req, res) => {
+  res.cookie("XSRF-TOKEN", req.csrfToken());
+  res.status(200).json({ 'XSRF-Token': req.csrfToken() });
+});
 
+app.use(routes);
 
 // Catch unhandled requests and forward to error handler.
 app.use((_req, _res, next) => {
@@ -55,10 +58,9 @@ app.use((_req, _res, next) => {
 });
 
 app.use((err, _req, _res, next) => {
-  // check if error is a Sequelize error:
   if (err instanceof ValidationError) {
-    let errors = {};
-    for (let error of err.errors) {
+    const errors = {};
+    for (const error of err.errors) {
       errors[error.path] = error.message;
     }
     err.title = 'Validation error';

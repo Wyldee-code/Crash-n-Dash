@@ -1,7 +1,6 @@
-// backend/routes/api/users.js
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const { setTokenCookie, requireAuth } = require('../../utils/auth');
+const { setTokenCookie } = require('../../utils/auth');
 const { User } = require('../../db/models');
 const { check } = require('express-validator');
 const { handleValidationErrors } = require('../../utils/validation');
@@ -28,7 +27,6 @@ router.post(
     const hashedPassword = bcrypt.hashSync(password);
 
     try {
-      // Attempt to create the new user
       const user = await User.create({
         email,
         username,
@@ -37,7 +35,6 @@ router.post(
         lastName
       });
 
-      // Structure response to include all necessary user data
       const safeUser = {
         id: user.id,
         email: user.email,
@@ -53,19 +50,16 @@ router.post(
       // Handle unique constraint errors
       if (err.name === 'SequelizeUniqueConstraintError') {
         const errors = {};
-        if (err.errors) {
-          err.errors.forEach((error) => {
-            if (error.path === 'email') {
-              errors.email = 'User with that email already exists';
-            }
-            if (error.path === 'username') {
-              errors.username = 'User with that username already exists';
-            }
-          });
-        }
-        return res.status(500).json({ errors });
+        err.errors.forEach((error) => {
+          if (error.path === 'email') {
+            errors.email = 'User with that email already exists';
+          }
+          if (error.path === 'username') {
+            errors.username = 'User with that username already exists';
+          }
+        });
+        return res.status(400).json({ message: 'User already exists with the specified email or username', errors });
       }
-      // Pass other errors to the error-handling middleware
       next(err);
     }
   }
