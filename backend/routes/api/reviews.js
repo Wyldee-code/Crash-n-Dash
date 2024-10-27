@@ -1,68 +1,77 @@
 const express = require('express');
-const { Op } = require('sequelize');
-const { Review, Spot, User } = require('../../db/models');
+const { Review, User, Spot, ReviewImage } = require('../../db/models');
+const { requireAuth } = require('../../utils/auth');
+const { check, validationResult } = require('express-validator');
 const router = express.Router();
 
-// Get filtered reviews with pagination and date filtering
-router.get('/', async (req, res) => {
-  const { spotId, stars, page = 1, size = 10, startDate, endDate } = req.query;
+// Validation for review data
+const validateReview = [
+  check('review').exists({ checkFalsy: true }).withMessage('Review text is required'),
+  check('stars').isInt({ min: 1, max: 5 }).withMessage('Stars must be an integer from 1 to 5'),
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ message: 'Validation error', errors: errors.mapped() });
+    }
+    next();
+  },
+];
 
-  // Initialize filter conditions
-  const where = {};
+// Get all reviews of the current user
+router.get('/current', requireAuth, async (req, res) => {
+  const reviews = await Review.findAll({
+    where: { userId: req.user.id },
+    include: [{ model: Spot }, { model: ReviewImage }],
+  });
+  res.json({ reviews });
+});
 
-  // Add spotId filter if provided
-  if (spotId) {
-    where.spotId = spotId;
-  }
+// Create a review for a spot by ID
+router.post('/:spotId', requireAuth, validateReview, async (req, res) => {
+  const { spotId } = req.params;
+  const { review, stars } = req.body;
 
-  // Add stars filter if provided
-  if (stars) {
-    where.stars = stars;
-  }
+  const spot = await Spot.findByPk(spotId);
+  if (!spot) return res.status(404).json({ message: "Spot couldn't be found" });
 
-  // Add date filtering if provided
-  if (startDate && endDate) {
-    where.createdAt = {
-      [Op.between]: [new Date(startDate), new Date(endDate)],
-    };
-  } else if (startDate) {
-    where.createdAt = {
-      [Op.gte]: new Date(startDate),
-    };
-  } else if (endDate) {
-    where.createdAt = {
-      [Op.lte]: new Date(endDate),
-    };
-  }
-
-  // Pagination: Limit and Offset
-  const limit = size > 10 ? 10 : parseInt(size);
-  const offset = (page - 1) * limit;
-
-  // Fetch filtered reviews with pagination and date filtering
-  const reviews = await Review.findAndCountAll({
-    where,
-    limit,
-    offset,
-    include: [
-      {
-        model: Spot,
-        attributes: ['id', 'name'],
-      },
-      {
-        model: User,
-        attributes: ['id', 'username'],
-      }
-    ]
+  const newReview = await Review.create({
+    userId: req.user.id,
+    spotId,
+    review,
+    stars,
   });
 
-  return res.json({
-    reviews: reviews.rows,
-    page: parseInt(page),
-    size: parseInt(size),
-    totalPages: Math.ceil(reviews.count / limit),
-    totalReviews: reviews.count,
-  });
+  res.status(201).json(newReview);
+});
+
+// Edit a review by ID
+router.put('/:reviewId', requireAuth, validateReview, async (req, res) => {
+  const { reviewId } = req.params;
+  const { review, stars } = req.body;
+
+  const existingReview = await Review.findByPk(reviewId);
+  if (!existingReview) return res.status(404).json({ message: "Review couldn't be found" });
+
+  if (existingReview.userId !== req.user.id) return res.status(403).json({ message: 'Forbidden' });
+
+  existingReview.review = review;
+  existingReview.stars = stars;
+  await existingReview.save();
+
+  res.json(existingReview);
+});
+
+// Delete a review by ID
+router.delete('/:reviewId', requireAuth, async (req, res) => {
+  const { reviewId } = req.params;
+
+  const review = await Review.findByPk(reviewId);
+  if (!review) return res.status(404).json({ message: "Review couldn't be found" });
+
+  if (review.userId !== req.user.id) return res.status(403).json({ message: 'Forbidden' });
+
+  await review.destroy();
+  res.json({ message: 'Successfully deleted' });
 });
 
 module.exports = router;

@@ -1,34 +1,34 @@
 'use strict';
-const { Model } = require('sequelize'); // Ensure sequelize is properly imported
-
+const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Review extends Model {
     static associate(models) {
-      // associations can be defined here
-      Review.belongsTo(models.Spot, { foreignKey: 'spotId' });
       Review.belongsTo(models.User, { foreignKey: 'userId' });
+      Review.belongsTo(models.Spot, { foreignKey: 'spotId' });
+      Review.hasMany(models.ReviewImage, { foreignKey: 'reviewId', onDelete: 'CASCADE', hooks: true });
     }
   }
   Review.init(
     {
+      userId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      spotId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
       review: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: false,
       },
       stars: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        validate: { min: 1, max: 5 },
-      },
-      spotId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: { model: 'Spots', key: 'id' },
-      },
-      userId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: { model: 'Users', key: 'id' },
+        validate: {
+          min: 1,
+          max: 5,
+        },
       },
     },
     {
