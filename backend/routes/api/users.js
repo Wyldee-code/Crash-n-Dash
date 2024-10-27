@@ -53,21 +53,18 @@ router.post(
       // Handle unique constraint errors
       if (err.name === 'SequelizeUniqueConstraintError') {
         const errors = {};
-        err.errors.forEach((error) => {
-          if (error.path === 'email') {
-            errors.email = 'User with that email already exists';
-          }
-          if (error.path === 'username') {
-            errors.username = 'User with that username already exists';
-          }
-        });
-
-        return res.status(400).json({
-          message: 'User already exists with the specified email or username',
-          errors: errors
-        });
+        if (err.errors) {
+          err.errors.forEach((error) => {
+            if (error.path === 'email') {
+              errors.email = 'User with that email already exists';
+            }
+            if (error.path === 'username') {
+              errors.username = 'User with that username already exists';
+            }
+          });
+        }
+        return res.status(500).json({ errors });
       }
-
       // Pass other errors to the error-handling middleware
       next(err);
     }
