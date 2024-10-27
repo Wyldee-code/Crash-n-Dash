@@ -1,7 +1,7 @@
 // backend/routes/api/users.js
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const { setTokenCookie } = require('../../utils/auth');
+const { setTokenCookie, requireAuth } = require('../../utils/auth');
 const { User } = require('../../db/models');
 const { check } = require('express-validator');
 const { handleValidationErrors } = require('../../utils/validation');
@@ -21,27 +21,20 @@ const validateSignup = [
 router.post(
   '/',
   validateSignup,
-  async (req, res, next) => {
-    try {
-      const { email, password, username, firstName, lastName } = req.body;
-      const hashedPassword = bcrypt.hashSync(password);
-      const user = await User.create({ email, username, hashedPassword, firstName, lastName });
+  async (req, res) => {
+    const { email, password, username, firstName, lastName } = req.body;
+    const hashedPassword = bcrypt.hashSync(password);
+    const user = await User.create({ email, username, hashedPassword, firstName, lastName });
 
-      const safeUser = {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        username: user.username
-      };
+    const safeUser = {
+      id: user.id,
+      email: user.email,
+      username: user.username
+    };
 
-      await setTokenCookie(res, safeUser);
+    await setTokenCookie(res, safeUser);
 
-      // Return a 201 status and the created user object
-      return res.status(201).json({ user: safeUser });
-    } catch (error) {
-      next(error); // Forward any errors to the error handling middleware
-    }
+    return res.json({ user: safeUser });
   }
 );
 
