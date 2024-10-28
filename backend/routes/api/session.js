@@ -20,7 +20,7 @@ const validateLogin = [
 router.post(
   '/',
   validateLogin,
-  async (req, res, next) => {
+  async (req, res) => {
     const { credential, password } = req.body;
     const user = await User.unscoped().findOne({
       where: {
@@ -58,7 +58,7 @@ router.delete('/', (_req, res) => {
 });
 
 // Restore session user route
-router.get('/', (req, res) => {
+router.get('/', restoreUser, (req, res) => {
   const { user } = req;
   if (user) {
     const safeUser = {
@@ -69,7 +69,9 @@ router.get('/', (req, res) => {
       username: user.username
     };
     return res.json({ user: safeUser });
-  } else return res.json({ user: null });
+  } else {
+    return res.json({ user: null });
+  }
 });
 
 module.exports = router;

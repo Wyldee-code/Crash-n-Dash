@@ -1,4 +1,4 @@
-// Signup route
+// backend/routes/api/users.js
 router.post(
   '/',
   validateSignup,
@@ -7,13 +7,12 @@ router.post(
     const hashedPassword = bcrypt.hashSync(password);
 
     try {
-      // Attempt to create the new user
       const user = await User.create({
         email,
         username,
         hashedPassword,
         firstName,
-        lastName
+        lastName,
       });
 
       const safeUser = {
@@ -21,14 +20,13 @@ router.post(
         email: user.email,
         username: user.username,
         firstName: user.firstName,
-        lastName: user.lastName
+        lastName: user.lastName,
       };
 
       await setTokenCookie(res, safeUser);
       return res.status(201).json({ user: safeUser });
 
     } catch (err) {
-      // Handle unique constraint errors
       if (err.name === 'SequelizeUniqueConstraintError') {
         const errors = {};
         if (err.errors) {
@@ -43,11 +41,10 @@ router.post(
         }
         return res.status(500).json({
           message: 'User already exists',
-          errors
+          errors,
         });
       }
 
-      // Handle validation errors with exact error structure
       if (err.name === 'SequelizeValidationError') {
         const errors = {};
         err.errors.forEach((error) => {
@@ -70,7 +67,7 @@ router.post(
         });
         return res.status(400).json({
           message: 'Validation error',
-          errors
+          errors,
         });
       }
 
