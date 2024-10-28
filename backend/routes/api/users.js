@@ -1,4 +1,24 @@
-// backend/routes/api/users.js
+const express = require('express');
+const bcrypt = require('bcryptjs');
+const { setTokenCookie } = require('../../utils/auth');
+const { User } = require('../../db/models');
+const { check } = require('express-validator');
+const { handleValidationErrors } = require('../../utils/validation');
+
+const router = express.Router();
+
+// Validation middleware for signup
+const validateSignup = [
+  check('email').exists({ checkFalsy: true }).isEmail().withMessage('Please provide a valid email.'),
+  check('username').exists({ checkFalsy: true }).isLength({ min: 4 }).withMessage('Please provide a username with at least 4 characters.'),
+  check('username').not().isEmail().withMessage('Username cannot be an email.'),
+  check('password').exists({ checkFalsy: true }).isLength({ min: 6 }).withMessage('Password must be 6 characters or more.'),
+  check('firstName').exists({ checkFalsy: true }).withMessage('Please provide a first name.'),
+  check('lastName').exists({ checkFalsy: true }).withMessage('Please provide a last name.'),
+  handleValidationErrors
+];
+
+// Signup route
 router.post(
   '/',
   validateSignup,
@@ -7,26 +27,29 @@ router.post(
     const hashedPassword = bcrypt.hashSync(password);
 
     try {
+      // Attempt to create the new user
       const user = await User.create({
         email,
         username,
         hashedPassword,
         firstName,
-        lastName,
+        lastName
       });
 
+      // Structure response to include all necessary user data
       const safeUser = {
         id: user.id,
-        email: user.email,
-        username: user.username,
         firstName: user.firstName,
         lastName: user.lastName,
+        email: user.email,
+        username: user.username
       };
 
       await setTokenCookie(res, safeUser);
       return res.status(201).json({ user: safeUser });
 
     } catch (err) {
+      // Handle unique constraint errors
       if (err.name === 'SequelizeUniqueConstraintError') {
         const errors = {};
         if (err.errors) {
@@ -41,36 +64,10 @@ router.post(
         }
         return res.status(500).json({
           message: 'User already exists',
-          errors,
+          errors
         });
       }
-
-      if (err.name === 'SequelizeValidationError') {
-        const errors = {};
-        err.errors.forEach((error) => {
-          switch (error.path) {
-            case 'email':
-              errors.email = 'Invalid email';
-              break;
-            case 'username':
-              errors.username = 'Username is required';
-              break;
-            case 'firstName':
-              errors.firstName = 'First Name is required';
-              break;
-            case 'lastName':
-              errors.lastName = 'Last Name is required';
-              break;
-            default:
-              errors[error.path] = error.message;
-          }
-        });
-        return res.status(400).json({
-          message: 'Validation error',
-          errors,
-        });
-      }
-
+      // Pass other errors to the error-handling middleware
       next(err);
     }
   }

@@ -1,4 +1,3 @@
-// backend/routes/api/session.js
 const express = require('express');
 const { Op } = require('sequelize');
 const bcrypt = require('bcryptjs');
@@ -20,7 +19,7 @@ const validateLogin = [
 router.post(
   '/',
   validateLogin,
-  async (req, res) => {
+  async (req, res, next) => {
     const { credential, password } = req.body;
     const user = await User.unscoped().findOne({
       where: {
@@ -47,7 +46,7 @@ router.post(
 
     await setTokenCookie(res, safeUser);
 
-    return res.json({ user: safeUser });
+    return res.status(200).json({ user: safeUser });
   }
 );
 
@@ -68,11 +67,10 @@ router.get('/', restoreUser, (req, res) => {
       email: user.email,
       username: user.username
     };
-    return res.json({ user: safeUser });
+    return res.status(200).json({ user: safeUser });
   } else {
-    return res.json({ user: null });
+    return res.status(200).json({ user: null });
   }
 });
 
 module.exports = router;
-
